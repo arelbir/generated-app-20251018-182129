@@ -22,9 +22,10 @@ MorFit is a comprehensive, mobile-first management platform for modern fitness s
 -   **Frontend:** React, Vite, TypeScript, React Router
 -   **UI:** Tailwind CSS, Shadcn/UI, Framer Motion, Lucide React
 -   **State Management:** Zustand
--   **Backend:** Cloudflare Workers, Hono
--   **Storage:** Cloudflare Durable Objects
--   **Deployment:** Cloudflare
+-   **Backend:** Node.js, Express.js, TypeScript
+-   **Database:** Supabase PostgreSQL
+-   **ORM:** Drizzle ORM
+-   **Development:** Concurrently (frontend + backend)
 
 ## Getting Started
 
@@ -34,7 +35,6 @@ Follow these instructions to get a local copy of the project up and running for 
 
 -   Node.js (v18.0 or later)
 -   [Bun](https://bun.sh/) package manager
--   [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/)
 
 ### Installation
 
@@ -49,58 +49,101 @@ Follow these instructions to get a local copy of the project up and running for 
     bun install
     ```
 
+3.  **Set up environment variables:**
+    ```bash
+    cp .env.example .env
+    ```
+    Edit `.env` file and add your Supabase PostgreSQL connection string.
+
+### Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Database Configuration
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT.supabase.co:5432/postgres?sslmode=require"
+
+# Development Environment
+NODE_ENV=development
+```
+
+**Required Environment Variables:**
+- `DATABASE_URL`: Your Supabase PostgreSQL connection string with SSL
+
 ### Running Locally
 
-To run the application locally, you'll need to start both the Vite development server for the frontend and the Wrangler development server for the backend worker.
+To run the application locally, you'll need to start both the Vite development server for the frontend and the Express.js backend server.
 
-1.  **Start the local development server:**
-    This command will start the Vite frontend and the Wrangler backend concurrently.
+1.  **Start both frontend and backend concurrently:**
     ```bash
-    wrangler dev
+    npm run dev:full
     ```
-    The application will be available at `http://localhost:8788`.
+    This will start:
+    - Frontend: http://localhost:3000
+    - Backend API: http://localhost:3001
+
+2.  **Or start them separately:**
+    ```bash
+    # Terminal 1 - Backend
+    npm run dev:backend
+
+    # Terminal 2 - Frontend
+    npm run dev
+    ```
+
+The application will be available at `http://localhost:3000` with the backend API running on `http://localhost:3001`.
 
 ## Project Structure
 
-The project is organized into three main directories:
+The project is organized into the following directories:
 
 -   `src/`: Contains the frontend React application, including pages, components, hooks, and utility functions.
--   `worker/`: Contains the Cloudflare Worker backend code, including the Hono application, API routes, and Durable Object entity definitions.
+-   `backend/`: Contains the Express.js backend server code, including API routes and database connections.
+-   `db/`: Contains Drizzle ORM schema definitions and database migrations.
 -   `shared/`: Contains TypeScript types and mock data shared between the frontend and backend to ensure type safety.
+-   `docs/`: Project documentation and development guides.
 
 ## Development
 
 ### Adding API Endpoints
 
-New API routes should be added in the `worker/user-routes.ts` file. Follow the existing patterns using Hono and the provided response helpers from `worker/core-utils.ts`.
+New API routes should be added in the `backend/server.ts` file. Follow the existing patterns using Express.js and the Drizzle ORM for database operations.
 
-### Creating Durable Object Entities
+### Database Schema
 
-New data models should be defined as classes extending `IndexedEntity` in `worker/entities.ts`. This pattern provides a structured way to interact with Cloudflare Durable Objects for stateful storage.
+Database schema is defined using Drizzle ORM in the `db/schema.ts` file. To add new tables or modify existing ones:
+
+1. Edit `db/schema.ts` to define your schema
+2. Generate migrations: `npx drizzle-kit generate`
+3. Apply migrations to your database
 
 ### Shared Types
 
 To maintain type safety between the client and server, define all shared data structures in `shared/types.ts`.
 
-## Deployment
+## Production Deployment
 
-This project is configured for seamless deployment to Cloudflare.
+This application can be deployed to any platform that supports Node.js applications:
 
-1.  **Build the application:**
-    ```bash
-    bun run build
-    ```
+- **Frontend**: Deploy to Vercel, Netlify, or any static hosting service
+- **Backend**: Deploy to Heroku, Railway, Render, or any Node.js hosting service
+- **Database**: Supabase PostgreSQL (already configured)
 
-2.  **Deploy to Cloudflare:**
-    Make sure you are logged in to your Cloudflare account via the Wrangler CLI (`wrangler login`).
-    ```bash
-    bun run deploy
-    ```
-    This command will build the Vite application and deploy it along with the worker to your Cloudflare account.
+### Deployment Steps:
 
-Alternatively, you can deploy directly from your GitHub repository.
+1. **Build the frontend:**
+   ```bash
+   npm run build
+   ```
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/arelbir/generated-app-20250928-130909)
+2. **Deploy backend to your Node.js hosting service**
+   Set environment variables in your hosting platform:
+   - `DATABASE_URL`: Your Supabase PostgreSQL connection string
+   - `NODE_ENV`: production
+   - `PORT`: 3001 (or your hosting platform's port)
+
+3. **Deploy frontend to static hosting**
+   Update API base URL in your frontend to point to your deployed backend
 
 ## Contributing
 

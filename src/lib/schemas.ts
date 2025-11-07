@@ -1,14 +1,14 @@
 import { z } from 'zod'
-// This schema defines the final, validated data shape.
-// The healthConditions are transformed from an array of objects to an array of strings.
-export const memberSchema = z.object({
+
+// Schema for form input (with objects for useFieldArray)
+export const memberFormSchema = z.object({
   fullName: z.string().min(2, { message: 'Ad Soyad en az 2 karakter olmalıdır.' }),
   email: z.string().email({ message: 'Geçerli bir e-posta adresi girin.' }),
   phone: z.string().min(10, { message: 'Telefon numarası en az 10 karakter olmalıdır.' }),
   gender: z.enum(['Kadın', 'Erkek', 'Diğer']),
   isVeiled: z.boolean(),
   notes: z.string().optional(),
-  healthConditions: z.array(z.object({ value: z.string() })).transform(data => data.map(item => item.value).filter(Boolean)),
+  healthConditions: z.array(z.object({ value: z.string() })),
   measurements: z.array(
     z.object({
       date: z.string(),
@@ -31,11 +31,19 @@ export const memberSchema = z.object({
     })
   ),
 })
-// This type represents the data shape that the form will work with internally.
-// `healthConditions` is an array of objects, which is compatible with `useFieldArray`.
-export type MemberFormInput = z.input<typeof memberSchema>;
-// This type represents the final output data after validation and transformation.
-export type MemberFormValues = z.infer<typeof memberSchema>
+
+// Schema for final output (with string array for healthConditions)
+export const memberSchema = memberFormSchema.transform((data) => ({
+  ...data,
+  healthConditions: data.healthConditions.map(item => item.value).filter(Boolean),
+}))
+
+// Type for form input
+export type MemberFormInput = z.input<typeof memberFormSchema>;
+
+// Type for final output
+export type MemberFormValues = z.output<typeof memberSchema>;
+
 export const deviceSchema = z.object({
   name: z.string().min(2, { message: 'Cihaz adı en az 2 karakter olmalıdır.' }),
   quantity: z.coerce.number().int().min(1, { message: 'Sayı en az 1 olmalıdır.' }),

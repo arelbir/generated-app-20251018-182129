@@ -20,8 +20,8 @@ export interface Member {
   isVeiled: boolean
   notes?: string
   healthConditions: string[]
-  measurements: Measurement[]
-  packages: Package[]
+  measurements?: Measurement[]
+  packages?: Package[]
 }
 export interface Measurement {
   date: string // ISO 8601 date string
@@ -123,7 +123,9 @@ export interface Staff {
   status: 'active' | 'inactive';
   gender: 'Kadın' | 'Erkek' | 'Diğer';
   joinDate: string; // ISO 8601 date string
+  hireDate?: string; // Backend field name (same as joinDate)
   specializationIds?: string[];
+  specializationName?: string; // Joined from backend
   notes?: string;
   workingHours: WorkingHour[];
   serviceCommissions: ServiceCommission[];

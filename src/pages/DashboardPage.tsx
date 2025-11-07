@@ -115,7 +115,9 @@ export function DashboardPage() {
     subDeviceId: string
   }>({ isOpen: false, time: '', subDeviceId: '' })
   const dateQueryParam = format(selectedDate, 'yyyy-MM-dd')
-  const { data: sessions, isLoading: isLoadingSessions } = useQuery<Session[]>({
+  const { data: sessionsData, isLoading: isLoadingSessions } = useQuery<{
+    items: Session[]
+  }>({
     queryKey: ['sessions', dateQueryParam],
     queryFn: () => api(`/api/sessions?date=${dateQueryParam}`),
   })
@@ -125,21 +127,65 @@ export function DashboardPage() {
     queryKey: ['members'],
     queryFn: () => api('/api/members?limit=1000'),
   })
-  const { data: devices, isLoading: isLoadingDevices } = useQuery<Device[]>({
+  const { data: devicesData, isLoading: isLoadingDevices } = useQuery<{
+    success: boolean;
+    data: Array<{
+      id: string;
+      name: string;
+      type: string;
+      status: string;
+    }>;
+  }>({
     queryKey: ['devices'],
     queryFn: () => api('/api/settings/devices'),
-  })
-  const membersById = useMemo(() => {
-    if (!membersData?.items) return new Map()
-    return new Map(membersData.items.map((m) => [m.id, m]))
-  }, [membersData])
+  });
+
+  // Transform backend data to match Device[] interface
+  const devices = useMemo(() => {
+    if (!devicesData?.data) return [];
+
+    // Group devices by type and create subDevices
+    const deviceMap = new Map<string, { device: any; subDevices: any[] }>();
+
+    devicesData.data.forEach((item) => {
+      const baseName = item.name.replace(/\s+\d+$/, ''); // Remove number suffix
+      const key = `${item.type}-${baseName}`;
+
+      if (!deviceMap.has(key)) {
+        deviceMap.set(key, {
+          device: {
+            id: key,
+            name: baseName,
+            quantity: 0,
+            measurementFrequency: null,
+            status: 'active' as const,
+            subDevices: []
+          },
+          subDevices: []
+        });
+      }
+
+      deviceMap.get(key)!.device.quantity++;
+      deviceMap.get(key)!.subDevices.push({
+        id: item.id,
+        name: item.name
+      });
+    });
+
+    return Array.from(deviceMap.values()).map(({ device, subDevices }) => ({
+      ...device,
+      subDevices
+    }));
+  }, [devicesData?.data]);
   const enrichedSessions = useMemo(() => {
-    if (!sessions) return []
-    return sessions.map((session) => ({
+    const sessionsArray = sessionsData?.items || []
+    const membersMap = membersData?.items ? new Map(membersData.items.map((m) => [m.id, m])) : new Map()
+    if (!sessionsArray.length) return []
+    return sessionsArray.map((session) => ({
       ...session,
-      member: membersById.get(session.memberId),
+      member: membersMap.get(session.memberId),
     }))
-  }, [sessions, membersById])
+  }, [sessionsData?.items, membersData?.items])
   const sessionsBySlot = useMemo(() => {
     const map = new Map<string, EnrichedSession>()
     enrichedSessions.forEach((session) => {

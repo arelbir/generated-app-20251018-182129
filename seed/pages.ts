@@ -1,0 +1,103 @@
+import { pages } from '../db/schema.js';
+
+export const seedPages = [
+  // Main pages
+  {
+    id: 'page-dashboard',
+    name: 'dashboard',
+    path: '/dashboard',
+    displayName: 'Dashboard',
+    icon: 'LayoutDashboard',
+    sortOrder: 1,
+    isActive: true,
+  },
+  {
+    id: 'page-members',
+    name: 'members',
+    path: '/members',
+    displayName: 'Üyeler',
+    icon: 'Users',
+    sortOrder: 2,
+    isActive: true,
+  },
+  {
+    id: 'page-sessions',
+    name: 'sessions',
+    path: '/sessions',
+    displayName: 'Seanslar',
+    icon: 'Calendar',
+    sortOrder: 3,
+    isActive: true,
+  },
+  {
+    id: 'page-devices',
+    name: 'devices',
+    path: '/devices',
+    displayName: 'Cihazlar',
+    icon: 'Settings',
+    sortOrder: 4,
+    isActive: true,
+  },
+
+  // Settings submenu
+  {
+    id: 'page-settings',
+    name: 'settings',
+    path: '/settings',
+    displayName: 'Ayarlar',
+    icon: 'Settings',
+    sortOrder: 5,
+    isActive: true,
+  },
+  {
+    id: 'page-staff',
+    name: 'staff',
+    path: '/settings/staff',
+    displayName: 'Personel',
+    icon: 'UserCheck',
+    parentId: 'page-settings',
+    sortOrder: 1,
+    isActive: true,
+  },
+  {
+    id: 'page-health-conditions',
+    name: 'health-conditions',
+    path: '/settings/health-conditions',
+    displayName: 'Sağlık Durumları',
+    icon: 'Heart',
+    parentId: 'page-settings',
+    sortOrder: 2,
+    isActive: true,
+  },
+  {
+    id: 'page-packages',
+    name: 'packages',
+    path: '/settings/packages',
+    displayName: 'Paketler',
+    icon: 'Package',
+    parentId: 'page-settings',
+    sortOrder: 3,
+    isActive: true,
+  },
+  {
+    id: 'page-specializations',
+    name: 'specializations',
+    path: '/settings/specializations',
+    displayName: 'Uzmanlıklar',
+    icon: 'Award',
+    parentId: 'page-settings',
+    sortOrder: 4,
+    isActive: true,
+  },
+
+  // Reports
+  {
+    id: 'page-reports',
+    name: 'reports',
+    path: '/reports',
+    displayName: 'Raporlar',
+    icon: 'BarChart3',
+    sortOrder: 6,
+    isActive: true,
+  },
+] as const;

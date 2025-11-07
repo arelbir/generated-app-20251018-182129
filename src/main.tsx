@@ -9,8 +9,11 @@ import {
 } from 'react-router-dom'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { MenuProvider } from '@/contexts/MenuContext'
 import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
+import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { MembersPage } from '@/pages/MembersPage'
 import { MemberProfilePage } from '@/pages/MemberProfilePage'
@@ -24,10 +27,20 @@ import { HealthConditionsPage } from '@/pages/settings/HealthConditionsPage'
 import { PackagesPage } from '@/pages/settings/PackagesPage'
 import { StaffManagementPage } from '@/pages/settings/StaffManagementPage'
 import { SpecializationsPage } from '@/pages/settings/SpecializationsPage'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+
 const router = createBrowserRouter([
   {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  {
     path: '/',
-    element: <HomePage />,
+    element: (
+      <ProtectedRoute>
+        <HomePage />
+      </ProtectedRoute>
+    ),
     errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
@@ -47,11 +60,16 @@ const router = createBrowserRouter([
     ],
   },
 ])
+
 // Do not touch this code
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <RouterProvider router={router} />
+      <AuthProvider>
+        <MenuProvider>
+          <RouterProvider router={router} />
+        </MenuProvider>
+      </AuthProvider>
     </ErrorBoundary>
   </StrictMode>
 )

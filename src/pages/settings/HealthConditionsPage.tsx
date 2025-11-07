@@ -26,6 +26,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
+import { useAuth } from '@/hooks/useAuth'
 import { HealthConditionDefinition } from '@shared/types'
 import { Button } from '@/components/ui/button'
 import { Edit, PlusCircle, Trash2 } from 'lucide-react'
@@ -61,6 +62,7 @@ function HealthConditionsSkeleton() {
 }
 export function HealthConditionsPage() {
   const queryClient = useQueryClient()
+  const { token, isAuthenticated } = useAuth()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedCondition, setSelectedCondition] =
@@ -71,11 +73,12 @@ export function HealthConditionsPage() {
     isError,
   } = useQuery<HealthConditionDefinition[]>({
     queryKey: ['health-conditions'],
-    queryFn: () => api('/api/settings/health-conditions'),
+    enabled: !!token && isAuthenticated,
+    queryFn: () => api('/api/health-conditions').then((res: any) => res.data?.items || []),
   })
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
-      api(`/api/settings/health-conditions/${id}`, { method: 'DELETE' }),
+      api(`/api/health-conditions/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       toast.success('Rahatsızlık başarıyla silindi.')
       queryClient.invalidateQueries({ queryKey: ['health-conditions'] })

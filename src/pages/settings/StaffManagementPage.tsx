@@ -27,6 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import { Staff } from '@shared/types'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Edit, PlusCircle, Trash2 } from 'lucide-react'
 import { useState } from 'react'
@@ -74,6 +75,7 @@ function StaffSkeleton() {
 }
 export function StaffManagementPage() {
   const queryClient = useQueryClient()
+  const { token, isAuthenticated } = useAuth()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
@@ -83,11 +85,32 @@ export function StaffManagementPage() {
     isError,
   } = useQuery<Staff[]>({
     queryKey: ['staff'],
-    queryFn: () => api('/api/settings/staff'),
+    enabled: !!token && isAuthenticated, // Only run query when authenticated
+    queryFn: () => api('/api/staff').then((res: any) => {
+      const items = res.data?.items || [];
+      // Map backend response to frontend Staff interface
+      return items.map((item: any) => ({
+        id: item.id,
+        fullName: item.fullName,
+        email: item.email,
+        phone: item.phone,
+        role: 'uzman', // Default role since backend doesn't have it
+        status: item.isActive ? 'active' : 'inactive',
+        gender: 'Diğer', // Default gender
+        joinDate: item.hireDate,
+        hireDate: item.hireDate, // Add for table display
+        specializationIds: item.specializationId ? [item.specializationId] : [],
+        specializationName: item.specializationName, // Add for table display
+        notes: item.notes,
+        workingHours: item.workingHours ? JSON.parse(item.workingHours) : [],
+        serviceCommissions: [], // Backend doesn't have this
+      }));
+    }),
   })
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
-      api(`/api/settings/staff/${id}`, { method: 'DELETE' }),
+      api(`/api/staff/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       toast.success('Personel başarıyla silindi.')
       queryClient.invalidateQueries({ queryKey: ['staff'] })
@@ -122,7 +145,7 @@ export function StaffManagementPage() {
               Stüdyo personelini ve rollerini yönetin.
             </p>
           </div>
-          <Button onClick={handleAddNew}>
+          <Button disabled title="Yakında eklenecek">
             <PlusCircle className="mr-2 h-4 w-4" />
             Yeni Personel Ekle
           </Button>
@@ -145,9 +168,8 @@ export function StaffManagementPage() {
                   <TableRow>
                     <TableHead>Ad Soyad</TableHead>
                     <TableHead>E-posta</TableHead>
-                    <TableHead>Telefon</TableHead>
-                    <TableHead>Rol</TableHead>
-                    <TableHead>Durum</TableHead>
+                    <TableHead>Uzmanlık</TableHead>
+                    <TableHead>İşe Başlama</TableHead>
                     <TableHead className="text-right w-[120px]">
                       İşlemler
                     </TableHead>
@@ -160,33 +182,23 @@ export function StaffManagementPage() {
                         {staffMember.fullName}
                       </TableCell>
                       <TableCell>{staffMember.email}</TableCell>
-                      <TableCell>{staffMember.phone}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{staffMember.role}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            staffMember.status === 'active'
-                              ? 'default'
-                              : 'secondary'
-                          }
-                        >
-                          {staffMember.status === 'active' ? 'Aktif' : 'Pasif'}
-                        </Badge>
-                      </TableCell>
+                      <TableCell>{staffMember.specializationName || 'Belirtilmemiş'}</TableCell>
+                      <TableCell>{new Date(staffMember.hireDate).toLocaleDateString('tr-TR')}</TableCell>
                       <TableCell className="text-right space-x-2">
+                        {/* Temporarily disabled edit/delete until StaffDialog is fixed */}
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => handleEdit(staffMember)}
+                          disabled
+                          title="Düzenleme yakında eklenecek"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="destructive"
                           size="icon"
-                          onClick={() => handleDelete(staffMember)}
+                          disabled
+                          title="Silme yakında eklenecek"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

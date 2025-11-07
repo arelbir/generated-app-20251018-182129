@@ -55,7 +55,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { memberSchema, MemberFormInput, MemberFormValues } from '@/lib/schemas'
+import { memberFormSchema, MemberFormInput, MemberFormValues } from '@/lib/schemas'
 import { toast } from 'sonner'
 import { format, parseISO } from 'date-fns'
 import { useEffect } from 'react'
@@ -90,7 +90,7 @@ export function EditMemberPage() {
     enabled: !!id,
   })
   const form = useForm<MemberFormInput>({
-    resolver: zodResolver(memberSchema),
+    resolver: zodResolver(memberFormSchema),
     defaultValues: {
       fullName: '',
       email: '',
@@ -107,7 +107,7 @@ export function EditMemberPage() {
     if (member) {
       form.reset({
         ...member,
-        healthConditions: member.healthConditions.map((value) => ({ value })),
+        healthConditions: member.healthConditions?.map((value) => ({ value })) || [],
         measurements: member.measurements || [],
         packages: member.packages || [],
       })
@@ -145,8 +145,26 @@ export function EditMemberPage() {
       toast.error(`Üye güncellenemedi: ${error.message}`)
     },
   })
-  const onSubmit = (values: MemberFormValues) => {
-    updateMemberMutation.mutate(values)
+  const onSubmit = (values: MemberFormInput) => {
+    // Transform MemberFormInput to MemberFormValues
+    const transformedValues: MemberFormValues = {
+      ...values,
+      healthConditions: values.healthConditions.map(item => item.value).filter(Boolean),
+      measurements: values.measurements.map(m => ({
+        ...m,
+        weight: Number(m.weight) || 0,
+        height: Number(m.height) || 0,
+        waist: Number(m.waist) || 0,
+        hips: Number(m.hips) || 0,
+        bodyFatPercentage: m.bodyFatPercentage ? Number(m.bodyFatPercentage) : undefined,
+      })),
+      packages: values.packages.map(p => ({
+        ...p,
+        totalSessions: Number(p.totalSessions) || 0,
+        sessionsRemaining: Number(p.sessionsRemaining) || 0,
+      })),
+    }
+    updateMemberMutation.mutate(transformedValues)
   }
   if (isLoading) return <EditMemberSkeleton />
   if (!member) return <div>Üye bulunamadı.</div>
@@ -373,7 +391,7 @@ export function EditMemberPage() {
                                 type="number"
                                 {...field}
                                 className="w-20"
-                                value={field.value ?? ''}
+                                value={field.value as string ?? ''}
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                               />
                             )}
@@ -388,7 +406,7 @@ export function EditMemberPage() {
                                 type="number"
                                 {...field}
                                 className="w-20"
-                                value={field.value ?? ''}
+                                value={field.value as string ?? ''}
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                               />
                             )}
@@ -402,7 +420,7 @@ export function EditMemberPage() {
                               <Input
                                 type="number"
                                 {...field}
-                                value={field.value ?? ''}
+                                value={field.value as string ?? ''}
                                 onChange={(e) => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
                                 className="w-20"
                               />
@@ -418,7 +436,7 @@ export function EditMemberPage() {
                                 type="number"
                                 {...field}
                                 className="w-20"
-                                value={field.value ?? ''}
+                                value={field.value as string ?? ''}
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                               />
                             )}
@@ -433,7 +451,7 @@ export function EditMemberPage() {
                                 type="number"
                                 {...field}
                                 className="w-20"
-                                value={field.value ?? ''}
+                                value={field.value as string ?? ''}
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                               />
                             )}

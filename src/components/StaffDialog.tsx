@@ -18,6 +18,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import { Staff, SpecializationDefinition, PackageDefinition } from '@shared/types'
+import { useAuth } from '@/hooks/useAuth'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
@@ -53,17 +54,22 @@ const weekDays: StaffFormValues['workingHours'][0]['day'][] = [
 export function StaffDialog({ isOpen, onOpenChange, staff }: StaffDialogProps) {
   const queryClient = useQueryClient()
   const isEditing = !!staff
+  const { token, isAuthenticated } = useAuth()
+  
   const { data: specializations, isLoading: isLoadingSpecs } = useQuery<
     SpecializationDefinition[]
   >({
     queryKey: ['specializations'],
-    queryFn: () => api('/api/settings/specializations'),
+    enabled: !!token && isAuthenticated && isOpen, // Only when authenticated and dialog open
+    queryFn: () => api('/api/specializations').then((res: any) => res.data?.items || []),
   })
+  
   const { data: packages, isLoading: isLoadingPackages } = useQuery<
     PackageDefinition[]
   >({
     queryKey: ['package-definitions'],
-    queryFn: () => api('/api/settings/packages'),
+    enabled: !!token && isAuthenticated && isOpen, // Only when authenticated and dialog open
+    queryFn: () => api('/api/packages').then((res: any) => res.data?.items || []),
   })
   const form = useForm({
     resolver: zodResolver(staffSchema),
@@ -131,8 +137,8 @@ export function StaffDialog({ isOpen, onOpenChange, staff }: StaffDialogProps) {
   const mutation = useMutation({
     mutationFn: (values: StaffFormValues) => {
       const url = isEditing
-        ? `/api/settings/staff/${staff!.id}`
-        : '/api/settings/staff'
+        ? `/api/staff/${staff!.id}`
+        : '/api/staff'
       const method = isEditing ? 'PUT' : 'POST'
       return api(url, {
         method,
@@ -192,7 +198,7 @@ export function StaffDialog({ isOpen, onOpenChange, staff }: StaffDialogProps) {
                 {commissionFields.map((field, index) => (
                   <div key={field.id} className="flex items-center gap-2">
                     <FormField control={form.control} name={`serviceCommissions.${index}.serviceId`} render={({ field }) => (<FormItem className="flex-1"><Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingPackages}><FormControl><SelectTrigger><SelectValue placeholder="Servis seçin..." /></SelectTrigger></FormControl><SelectContent>{packages?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></FormItem>)} />
-                    <FormField control={form.control} name={`serviceCommissions.${index}.rate`} render={({ field }) => (<FormItem><FormControl><Input type="number" placeholder="Oran %" {...field} className="w-28" onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} value={field.value ?? ''} /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name={`serviceCommissions.${index}.rate`} render={({ field }) => (<FormItem><FormControl><Input type="number" placeholder="Oran %" {...field} className="w-28" onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} value={field.value as string ?? ''} /></FormControl></FormItem>)} />
                     <Button type="button" variant="ghost" size="icon" onClick={() => removeCommission(index)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
                   </div>
                 ))}

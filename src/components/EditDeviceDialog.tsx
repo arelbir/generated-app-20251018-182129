@@ -124,7 +124,7 @@ export function EditDeviceDialog({
                       onChange={(e) =>
                         field.onChange(parseInt(e.target.value, 10) || 0)
                       }
-                      value={field.value ?? ''}
+                      value={field.value as string ?? ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -149,7 +149,7 @@ export function EditDeviceDialog({
                             : parseInt(e.target.value, 10)
                         )
                       }
-                      value={field.value ?? ''}
+                      value={field.value as string ?? ''}
                     />
                   </FormControl>
                   <FormMessage />

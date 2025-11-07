@@ -26,6 +26,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
+import { useAuth } from '@/hooks/useAuth'
 import { PackageDefinition } from '@shared/types'
 import { Button } from '@/components/ui/button'
 import { Edit, PlusCircle, Trash2 } from 'lucide-react'
@@ -77,6 +78,7 @@ function PackagesSkeleton() {
 }
 export function PackagesPage() {
   const queryClient = useQueryClient()
+  const { token, isAuthenticated } = useAuth()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedPackage, setSelectedPackage] =
@@ -86,15 +88,16 @@ export function PackagesPage() {
     isLoading,
     isError,
   } = useQuery<PackageDefinition[]>({
-    queryKey: ['package-definitions'],
-    queryFn: () => api('/api/settings/packages'),
+    queryKey: ['packages'],
+    enabled: !!token && isAuthenticated,
+    queryFn: () => api('/api/packages').then((res: any) => res.data?.items || []),
   })
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
-      api(`/api/settings/packages/${id}`, { method: 'DELETE' }),
+      api(`/api/packages/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       toast.success('Paket başarıyla silindi.')
-      queryClient.invalidateQueries({ queryKey: ['package-definitions'] })
+      queryClient.invalidateQueries({ queryKey: ['packages'] })
       setIsDeleteDialogOpen(false)
       setSelectedPackage(null)
     },

@@ -97,7 +97,7 @@ export function NewDeviceDialog({ isOpen, onOpenChange }: NewDeviceDialogProps) 
                       onChange={(e) =>
                         field.onChange(parseInt(e.target.value, 10) || 0)
                       }
-                      value={field.value ?? ''}
+                      value={field.value as string ?? ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -122,7 +122,7 @@ export function NewDeviceDialog({ isOpen, onOpenChange }: NewDeviceDialogProps) 
                             : parseInt(e.target.value, 10)
                         )
                       }
-                      value={field.value ?? ''}
+                      value={field.value as string ?? ''}
                     />
                   </FormControl>
                   <FormMessage />

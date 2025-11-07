@@ -163,7 +163,7 @@ export function PackageDialog({ isOpen, onOpenChange, pkg }: PackageDialogProps)
                         onChange={(e) =>
                           field.onChange(parseInt(e.target.value, 10) || 0)
                         }
-                        value={field.value ?? ''}
+                        value={field.value as string ?? ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -183,7 +183,7 @@ export function PackageDialog({ isOpen, onOpenChange, pkg }: PackageDialogProps)
                         onChange={(e) =>
                           field.onChange(parseInt(e.target.value, 10) || 0)
                         }
-                        value={field.value ?? ''}
+                        value={field.value as string ?? ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -203,7 +203,7 @@ export function PackageDialog({ isOpen, onOpenChange, pkg }: PackageDialogProps)
                         onChange={(e) =>
                           field.onChange(parseInt(e.target.value, 10) || 0)
                         }
-                        value={field.value ?? ''}
+                        value={field.value as string ?? ''}
                       />
                     </FormControl>
                     <FormMessage />

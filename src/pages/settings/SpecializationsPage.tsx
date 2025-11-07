@@ -26,6 +26,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
+import { useAuth } from '@/hooks/useAuth'
 import { SpecializationDefinition } from '@shared/types'
 import { Button } from '@/components/ui/button'
 import { Edit, PlusCircle, Trash2 } from 'lucide-react'
@@ -61,6 +62,7 @@ function SpecializationsSkeleton() {
 }
 export function SpecializationsPage() {
   const queryClient = useQueryClient()
+  const { token, isAuthenticated } = useAuth()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [selectedSpec, setSelectedSpec] =
@@ -71,11 +73,12 @@ export function SpecializationsPage() {
     isError,
   } = useQuery<SpecializationDefinition[]>({
     queryKey: ['specializations'],
-    queryFn: () => api('/api/settings/specializations'),
+    enabled: !!token && isAuthenticated,
+    queryFn: () => api('/api/specializations').then((res: any) => res.data?.items || []),
   })
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
-      api(`/api/settings/specializations/${id}`, { method: 'DELETE' }),
+      api(`/api/specializations/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       toast.success('Uzmanlık alanı başarıyla silindi.')
       queryClient.invalidateQueries({ queryKey: ['specializations'] })

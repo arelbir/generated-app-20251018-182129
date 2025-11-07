@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1760817765690,
+      "tag": "0000_crazy_carnage",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760821172489,
+      "tag": "0001_slimy_annihilus",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760874664456,
+      "tag": "0002_lucky_princess_powerful",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1760881383062,
+      "tag": "0003_brave_adam_destine",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1760883206153,
+      "tag": "0004_aberrant_serpent_society",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1760883439215,
+      "tag": "0005_fixed_sauron",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1760884734722,
+      "tag": "0006_striped_captain_universe",
+      "breakpoints": true
+    }
+  ]
+}
